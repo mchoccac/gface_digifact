@@ -151,7 +151,7 @@ class AccountInvoice(models.Model):
                 xmls = etree.tostring(FactDocGT, pretty_print=True, xml_declaration=True, encoding="UTF-8")
                 logging.warn(xmls)
 
-                wsdl = 'https://test.digifact.com.gt/mx.com.fact.wsfront/FactWsFront.asmx?wsdl'
+                wsdl = 'https://www.digifact.com.gt/mx.com.fact.wsfront/FactWSFront.asmx?wsdl'
                 client = zeep.Client(wsdl=wsdl)
 
                 resultado = client.service.RequestTransaction(factura.journal_id.requestor_gface, "CONVERT_NATIVE_XML", "GT", factura.journal_id.nit_gface, factura.journal_id.requestor_gface, "GT."+factura.journal_id.nit_gface+"."+factura.journal_id.usuario_gface, "<![CDATA["+xmls+"]]>", "XML,PDF", "")
