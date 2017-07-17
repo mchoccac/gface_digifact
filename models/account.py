@@ -7,8 +7,14 @@ from datetime import datetime
 from lxml import etree
 from StringIO import StringIO
 import base64
-import logging
+import cgi
 import zeep
+
+import logging
+
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
@@ -65,6 +71,21 @@ class AccountInvoice(models.Model):
                 Comprador = etree.SubElement(FactDocGT, "Comprador")
                 NitC = etree.SubElement(Comprador, "Nit")
                 NitC.text = factura.partner_id.vat.replace('-','')
+                if factura.partner_id.vat == 'CF':
+                    NombreComercial = etree.SubElement(Comprador, "NombreComercial")
+                    NombreComercial.text = factura.partner_id.vat.replace('-','')
+
+                    DireccionComercial = etree.SubElement(Comprador, "DireccionComercial")
+                    Direccion1 = etree.SubElement(DireccionComercial, "Direccion1")
+                    Direccion1.text = "Ciudad"
+                    Direccion2 = etree.SubElement(DireccionComercial, "Direccion2")
+                    Direccion2.text = "Ciudad"
+                    Municipio = etree.SubElement(DireccionComercial, "Municipio")
+                    Municipio.text = "Guatemala"
+                    Departamento = etree.SubElement(DireccionComercial, "Departamento")
+                    Departamento.text = "Guatemala"
+                    CodigoDePais = etree.SubElement(DireccionComercial, "CodigoDePais")
+                    CodigoDePais.text = "GT"
 
                 IdiomaC = etree.SubElement(Comprador, "Idioma")
                 IdiomaC.text = "es"
@@ -73,9 +94,11 @@ class AccountInvoice(models.Model):
                 total = 0
                 Detalles = etree.SubElement(FactDocGT, "Detalles")
                 for linea in factura.invoice_line_ids:
+                    precio_total = linea.price_unit * (100-linea.discount) / 100
+
                     Detalle = etree.SubElement(Detalles, "Detalle")
                     Descripcion = etree.SubElement(Detalle, "Descripcion")
-                    Descripcion.text = linea.product_id.name
+                    Descripcion.text = cgi.escape(linea.product_id.name)
                     CodigoEAN = etree.SubElement(Detalle, "CodigoEAN")
                     CodigoEAN.text = "00000000000000"
                     UnidadDeMedida = etree.SubElement(Detalle, "UnidadDeMedida")
@@ -85,13 +108,13 @@ class AccountInvoice(models.Model):
 
                     ValorSinDR = etree.SubElement(Detalle, "ValorSinDR")
                     PrecioSin = etree.SubElement(ValorSinDR, "Precio")
-                    PrecioSin.text = str(linea.price_subtotal/float(linea.quantity))
+                    PrecioSin.text = str(linea.price_subtotal/linea.quantity)
                     MontoSin = etree.SubElement(ValorSinDR, "Monto")
                     MontoSin.text = str(linea.price_subtotal)
 
                     ValorConDR = etree.SubElement(Detalle, "ValorConDR")
                     PrecioCon = etree.SubElement(ValorConDR, "Precio")
-                    PrecioCon.text = str(linea.price_subtotal/float(linea.quantity))
+                    PrecioCon.text = str(linea.price_subtotal/linea.quantity)
                     MontoCon = etree.SubElement(ValorConDR, "Monto")
                     MontoCon.text = str(linea.price_subtotal)
 
@@ -107,14 +130,17 @@ class AccountInvoice(models.Model):
                     TipoDetalle = etree.SubElement(ImpuestoDetalle, "Tipo")
                     TipoDetalle.text = "IVA"
                     BaseDetalle = etree.SubElement(ImpuestoDetalle, "Base")
-                    BaseDetalle.text = str(linea.price_subtotal)
+                    BaseDetalle.text = str(precio_total)
                     TasaDetalle = etree.SubElement(ImpuestoDetalle, "Tasa")
                     TasaDetalle.text = "12"
                     MontoDetalle = etree.SubElement(ImpuestoDetalle, "Monto")
                     MontoDetalle.text = str(((linea.price_unit * linea.quantity * (100-linea.discount) / 100) - linea.price_subtotal ) * linea.quantity)
 
                     Categoria = etree.SubElement(Detalle, "Categoria")
-                    Categoria.text = "BIEN"
+                    if linea.product_id.type == 'product':
+                        Categoria.text = "BIEN"
+                    else:
+                        Categoria.text = "SERVICIO"
 
                     subtotal += linea.price_subtotal
                     total += linea.price_unit * linea.quantity * (100-linea.discount) / 100
@@ -137,7 +163,7 @@ class AccountInvoice(models.Model):
                 Tipo = etree.SubElement(Impuesto, "Tipo")
                 Tipo.text = "IVA"
                 Base = etree.SubElement(Impuesto, "Base")
-                Base.text = str(subtotal)
+                Base.text = str(total)
                 Tasa = etree.SubElement(Impuesto, "Tasa")
                 Tasa.text = "12"
                 Monto = etree.SubElement(Impuesto, "Monto")
@@ -148,8 +174,13 @@ class AccountInvoice(models.Model):
                 TotalLetras = etree.SubElement(Totales, "TotalLetras")
                 TotalLetras.text = str(total)
 
-                xmls = etree.tostring(FactDocGT, pretty_print=True, xml_declaration=True, encoding="UTF-8")
-                logging.warn(xmls)
+                if factura.comment:
+                    TextosDePie = etree.SubElement(FactDocGT, "TextosDePie")
+                    Texto = etree.SubElement(Totales, "Texto")
+                    Texto.text = factura.comment
+
+                xmls = etree.tostring(FactDocGT, xml_declaration=True, encoding="UTF-8", pretty_print=True)
+                logging.warn(xmls.encode('utf8'))
 
                 wsdl = 'https://www.digifact.com.gt/mx.com.fact.wsfront/FactWSFront.asmx?wsdl'
                 client = zeep.Client(wsdl=wsdl)
@@ -159,8 +190,6 @@ class AccountInvoice(models.Model):
 
                 if resultado['Response']['Result']:
                     dte = etree.parse(StringIO(base64.b64decode(resultado['ResponseData']['ResponseData1'])))
-                    logging.warn(base64.b64decode(resultado['ResponseData']['ResponseData1']))
-                    logging.warn(dte)
 
                     pdf = resultado['ResponseData']['ResponseData3']
                     firma = dte.xpath("//*[local-name()='SignatureValue']")[0].text
