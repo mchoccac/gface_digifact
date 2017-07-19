@@ -38,7 +38,8 @@ class AccountInvoice(models.Model):
                 NumeroDocumento = etree.SubElement(AsignacionSolicitada, "NumeroDocumento")
                 NumeroDocumento.text = factura.number
                 FechaEmision = etree.SubElement(AsignacionSolicitada, "FechaEmision")
-                FechaEmision.text = fields.Date.context_today(self)+'T00:00:00'
+                # FechaEmision.text = fields.Date.context_today(self)+'T00:00:00'
+                FechaEmision.text = factura.date_invoice+'T00:00:00'
                 NumeroAutorizacion = etree.SubElement(AsignacionSolicitada, "NumeroAutorizacion")
                 NumeroAutorizacion.text = factura.journal_id.numero_autorizacion_gface
                 FechaResolucion = etree.SubElement(AsignacionSolicitada, "FechaResolucion")
