@@ -38,6 +38,7 @@ class AccountInvoice(models.Model):
                 NumeroDocumento = etree.SubElement(AsignacionSolicitada, "NumeroDocumento")
                 NumeroDocumento.text = factura.number
                 FechaEmision = etree.SubElement(AsignacionSolicitada, "FechaEmision")
+                # FechaEmision.text = fields.Date.context_today(self)+'T00:00:00'
                 FechaEmision.text = factura.date_invoice+'T00:00:00'
                 NumeroAutorizacion = etree.SubElement(AsignacionSolicitada, "NumeroAutorizacion")
                 NumeroAutorizacion.text = factura.journal_id.numero_autorizacion_gface
@@ -47,6 +48,13 @@ class AccountInvoice(models.Model):
                 RangoInicialAutorizado.text = str(factura.journal_id.rango_inicial_gface)
                 RangoFinalAutorizado = etree.SubElement(AsignacionSolicitada, "RangoFinalAutorizado")
                 RangoFinalAutorizado.text = str(factura.journal_id.rango_final_gface)
+
+                if factura.partner_id.email:
+                    Procesamiento = etree.SubElement(FactDocGT, "Procesamiento")
+                    Dictionary = etree.SubElement(Procesamiento, "Dictionary", name="email")
+                    EntryFrom = etree.SubElement(Dictionary, "Entry", v="ACCOUNT_OWNER", k="from")
+                    EntryTo = etree.SubElement(Dictionary, "Entry", v=factura.partner_id.email, k="to")
+                    EntryFormat = etree.SubElement(Dictionary, "Entry", v="pdf", k="formats")
 
                 Encabezado = etree.SubElement(FactDocGT, "Encabezado")
                 TipoActivo = etree.SubElement(Encabezado, "TipoActivo")
