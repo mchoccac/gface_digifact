@@ -38,7 +38,7 @@ class AccountInvoice(models.Model):
                 NumeroDocumento = etree.SubElement(AsignacionSolicitada, "NumeroDocumento")
                 NumeroDocumento.text = factura.number
                 FechaEmision = etree.SubElement(AsignacionSolicitada, "FechaEmision")
-                FechaEmision.text = factura.date_invoice+'T00:00:00'
+                FechaEmision.text = fields.Date.context_today(self)+'T00:00:00'
                 NumeroAutorizacion = etree.SubElement(AsignacionSolicitada, "NumeroAutorizacion")
                 NumeroAutorizacion.text = factura.journal_id.numero_autorizacion_gface
                 FechaResolucion = etree.SubElement(AsignacionSolicitada, "FechaResolucion")
@@ -163,7 +163,7 @@ class AccountInvoice(models.Model):
                 Tipo = etree.SubElement(Impuesto, "Tipo")
                 Tipo.text = "IVA"
                 Base = etree.SubElement(Impuesto, "Base")
-                Base.text = str(total)
+                Base.text = str(subtotal)
                 Tasa = etree.SubElement(Impuesto, "Tasa")
                 Tasa.text = "12"
                 Monto = etree.SubElement(Impuesto, "Monto")
