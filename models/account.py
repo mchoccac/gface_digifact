@@ -171,7 +171,7 @@ class AccountInvoice(models.Model):
                 Tipo = etree.SubElement(Impuesto, "Tipo")
                 Tipo.text = "IVA"
                 Base = etree.SubElement(Impuesto, "Base")
-                Base.text = str(total)
+                Base.text = str(subtotal)
                 Tasa = etree.SubElement(Impuesto, "Tasa")
                 Tasa.text = "12"
                 Monto = etree.SubElement(Impuesto, "Monto")
