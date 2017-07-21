@@ -102,7 +102,13 @@ class AccountInvoice(models.Model):
                 total = 0
                 Detalles = etree.SubElement(FactDocGT, "Detalles")
                 for linea in factura.invoice_line_ids:
-                    precio_total = linea.price_unit * (100-linea.discount) / 100
+                    precio_unitario = linea.price_unit * (100-linea.discount) / 100
+                    precio_unitario_base = linea.price_subtotal / linea.quantity
+
+                    total_linea = precio_unitario * linea.quantity
+                    total_linea_base = precio_unitario_base * linea.quantity
+
+                    total_impuestos = total_linea - total_linea_base
 
                     Detalle = etree.SubElement(Detalles, "Detalle")
                     Descripcion = etree.SubElement(Detalle, "Descripcion")
@@ -116,33 +122,33 @@ class AccountInvoice(models.Model):
 
                     ValorSinDR = etree.SubElement(Detalle, "ValorSinDR")
                     PrecioSin = etree.SubElement(ValorSinDR, "Precio")
-                    PrecioSin.text = str(linea.price_subtotal/linea.quantity)
+                    PrecioSin.text = str(precio_unitario_base)
                     MontoSin = etree.SubElement(ValorSinDR, "Monto")
-                    MontoSin.text = str(linea.price_subtotal)
+                    MontoSin.text = str(total_linea_base)
 
                     ValorConDR = etree.SubElement(Detalle, "ValorConDR")
                     PrecioCon = etree.SubElement(ValorConDR, "Precio")
-                    PrecioCon.text = str(linea.price_subtotal/linea.quantity)
+                    PrecioCon.text = str(precio_unitario_base)
                     MontoCon = etree.SubElement(ValorConDR, "Monto")
-                    MontoCon.text = str(linea.price_subtotal)
+                    MontoCon.text = str(total_linea_base)
 
                     ImpuestosDetalle = etree.SubElement(Detalle, "Impuestos")
                     TotalDeImpuestosDetalle = etree.SubElement(ImpuestosDetalle, "TotalDeImpuestos")
-                    TotalDeImpuestosDetalle.text = str(((linea.price_unit * linea.quantity * (100-linea.discount) / 100) - linea.price_subtotal ) * linea.quantity)
+                    TotalDeImpuestosDetalle.text = str(total_impuestos)
                     IngresosNetosGravadosDetalle = etree.SubElement(ImpuestosDetalle, "IngresosNetosGravados")
-                    IngresosNetosGravadosDetalle.text = str(linea.price_subtotal)
+                    IngresosNetosGravadosDetalle.text = str(total_linea_base)
                     TotalDeIVADetalle = etree.SubElement(ImpuestosDetalle, "TotalDeIVA")
-                    TotalDeIVADetalle.text = str(((linea.price_unit * linea.quantity * (100-linea.discount) / 100) - linea.price_subtotal ) * linea.quantity)
+                    TotalDeIVADetalle.text = str(total_impuestos)
 
                     ImpuestoDetalle = etree.SubElement(ImpuestosDetalle, "Impuesto")
                     TipoDetalle = etree.SubElement(ImpuestoDetalle, "Tipo")
                     TipoDetalle.text = "IVA"
                     BaseDetalle = etree.SubElement(ImpuestoDetalle, "Base")
-                    BaseDetalle.text = str(precio_total)
+                    BaseDetalle.text = str(total_linea_base)
                     TasaDetalle = etree.SubElement(ImpuestoDetalle, "Tasa")
                     TasaDetalle.text = "12"
                     MontoDetalle = etree.SubElement(ImpuestoDetalle, "Monto")
-                    MontoDetalle.text = str(((linea.price_unit * linea.quantity * (100-linea.discount) / 100) - linea.price_subtotal ) * linea.quantity)
+                    MontoDetalle.text = str(total_impuestos)
 
                     Categoria = etree.SubElement(Detalle, "Categoria")
                     if linea.product_id.type == 'product':
@@ -150,8 +156,8 @@ class AccountInvoice(models.Model):
                     else:
                         Categoria.text = "SERVICIO"
 
-                    subtotal += linea.price_subtotal
-                    total += linea.price_unit * linea.quantity * (100-linea.discount) / 100
+                    total += total_linea
+                    subtotal += total_linea_base
 
                 Totales = etree.SubElement(FactDocGT, "Totales")
                 SubTotalSinDR = etree.SubElement(Totales, "SubTotalSinDR")
