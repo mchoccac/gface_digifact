@@ -81,7 +81,7 @@ class AccountInvoice(models.Model):
                 NitC.text = factura.partner_id.vat.replace('-','')
                 if factura.partner_id.vat == 'CF':
                     NombreComercial = etree.SubElement(Comprador, "NombreComercial")
-                    NombreComercial.text = factura.partner_id.vat.replace('-','')
+                    NombreComercial.text = factura.partner_id.name
 
                     DireccionComercial = etree.SubElement(Comprador, "DireccionComercial")
                     Direccion1 = etree.SubElement(DireccionComercial, "Direccion1")
