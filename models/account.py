@@ -12,10 +12,6 @@ import zeep
 
 import logging
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
@@ -194,7 +190,6 @@ class AccountInvoice(models.Model):
                     Texto.text = factura.comment
 
                 xmls = etree.tostring(FactDocGT, xml_declaration=True, encoding="UTF-8", pretty_print=True)
-                logging.warn(xmls.encode('utf8'))
 
                 wsdl = 'https://www.digifact.com.gt/mx.com.fact.wsfront/FactWSFront.asmx?wsdl'
                 client = zeep.Client(wsdl=wsdl)
