@@ -120,7 +120,7 @@ class AccountInvoice(models.Model):
 
                     ValorSinDR = etree.SubElement(Detalle, "ValorSinDR")
                     PrecioSin = etree.SubElement(ValorSinDR, "Precio")
-                    PrecioSin.text = '{:.2f}'.format(precio_unitario_base)
+                    PrecioSin.text = str(precio_unitario_base)
                     MontoSin = etree.SubElement(ValorSinDR, "Monto")
                     MontoSin.text = str(total_linea_base)
 
