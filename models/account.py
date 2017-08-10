@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
 
-from openerp import models, fields, api, _
-from openerp.exceptions import UserError, ValidationError
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError, ValidationError
+
+import odoo.addons.l10n_gt_extra.a_letras
 
 from datetime import datetime
 from lxml import etree
@@ -110,7 +112,7 @@ class AccountInvoice(models.Model):
                     Descripcion = etree.SubElement(Detalle, "Descripcion")
                     Descripcion.text = cgi.escape(linea.name)
                     CodigoEAN = etree.SubElement(Detalle, "CodigoEAN")
-                    CodigoEAN.text = "00000000000000"
+                    CodigoEAN.text = "11111111111111"
                     UnidadDeMedida = etree.SubElement(Detalle, "UnidadDeMedida")
                     UnidadDeMedida.text = "Uni"
                     Cantidad = etree.SubElement(Detalle, "Cantidad")
@@ -118,7 +120,7 @@ class AccountInvoice(models.Model):
 
                     ValorSinDR = etree.SubElement(Detalle, "ValorSinDR")
                     PrecioSin = etree.SubElement(ValorSinDR, "Precio")
-                    PrecioSin.text = str(precio_unitario_base)
+                    PrecioSin.text = '{:.2f}'.format(precio_unitario_base)
                     MontoSin = etree.SubElement(ValorSinDR, "Monto")
                     MontoSin.text = str(total_linea_base)
 
@@ -182,7 +184,7 @@ class AccountInvoice(models.Model):
                 Total = etree.SubElement(Totales, "Total")
                 Total.text = str(total)
                 TotalLetras = etree.SubElement(Totales, "TotalLetras")
-                TotalLetras.text = str(total)
+                TotalLetras.text = odoo.addons.l10n_gt_extra.a_letras.num_a_letras(total)
 
                 if factura.comment:
                     TextosDePie = etree.SubElement(FactDocGT, "TextosDePie")
