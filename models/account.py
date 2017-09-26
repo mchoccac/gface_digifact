@@ -30,22 +30,21 @@ class AccountInvoice(models.Model):
                 Version = etree.SubElement(FactDocGT, "Version")
                 Version.text = "3"
 
-                AsignacionSolicitada = etree.SubElement(FactDocGT, "AsignacionSolicitada")
-                Serie = etree.SubElement(AsignacionSolicitada, "Serie")
-                Serie.text = factura.journal_id.serie_gface
-                NumeroDocumento = etree.SubElement(AsignacionSolicitada, "NumeroDocumento")
-                NumeroDocumento.text = factura.number
-                FechaEmision = etree.SubElement(AsignacionSolicitada, "FechaEmision")
-                # FechaEmision.text = fields.Date.context_today(self)+'T00:00:00'
-                FechaEmision.text = factura.date_invoice+'T00:00:00'
-                NumeroAutorizacion = etree.SubElement(AsignacionSolicitada, "NumeroAutorizacion")
-                NumeroAutorizacion.text = factura.journal_id.numero_autorizacion_gface
-                FechaResolucion = etree.SubElement(AsignacionSolicitada, "FechaResolucion")
-                FechaResolucion.text = factura.journal_id.fecha_resolucion_gface
-                RangoInicialAutorizado = etree.SubElement(AsignacionSolicitada, "RangoInicialAutorizado")
-                RangoInicialAutorizado.text = str(factura.journal_id.rango_inicial_gface)
-                RangoFinalAutorizado = etree.SubElement(AsignacionSolicitada, "RangoFinalAutorizado")
-                RangoFinalAutorizado.text = str(factura.journal_id.rango_final_gface)
+                # AsignacionSolicitada = etree.SubElement(FactDocGT, "AsignacionSolicitada")
+                # Serie = etree.SubElement(AsignacionSolicitada, "Serie")
+                # Serie.text = factura.journal_id.serie_gface
+                # NumeroDocumento = etree.SubElement(AsignacionSolicitada, "NumeroDocumento")
+                # NumeroDocumento.text = factura.number
+                # FechaEmision = etree.SubElement(AsignacionSolicitada, "FechaEmision")
+                # FechaEmision.text = factura.date_invoice+'T00:00:00'
+                # NumeroAutorizacion = etree.SubElement(AsignacionSolicitada, "NumeroAutorizacion")
+                # NumeroAutorizacion.text = factura.journal_id.numero_autorizacion_gface
+                # FechaResolucion = etree.SubElement(AsignacionSolicitada, "FechaResolucion")
+                # FechaResolucion.text = factura.journal_id.fecha_resolucion_gface
+                # RangoInicialAutorizado = etree.SubElement(AsignacionSolicitada, "RangoInicialAutorizado")
+                # RangoInicialAutorizado.text = str(factura.journal_id.rango_inicial_gface)
+                # RangoFinalAutorizado = etree.SubElement(AsignacionSolicitada, "RangoFinalAutorizado")
+                # RangoFinalAutorizado.text = str(factura.journal_id.rango_final_gface)
 
                 if factura.partner_id.email:
                     Procesamiento = etree.SubElement(FactDocGT, "Procesamiento")
@@ -154,6 +153,10 @@ class AccountInvoice(models.Model):
                     else:
                         Categoria.text = "SERVICIO"
 
+                    TextosDePosicion = etree.SubElement(Detalle, "TextosDePosicion")
+                    Texto = etree.SubElement(TextosDePosicion, "Texto")
+                    Texto.text = cgi.escape(linea.product_id.default_code)
+
                     total += total_linea
                     subtotal += total_linea_base
 
@@ -188,7 +191,7 @@ class AccountInvoice(models.Model):
 
                 if factura.comment:
                     TextosDePie = etree.SubElement(FactDocGT, "TextosDePie")
-                    Texto = etree.SubElement(Totales, "Texto")
+                    Texto = etree.SubElement(TextosDePie, "Texto")
                     Texto.text = factura.comment
 
                 xmls = etree.tostring(FactDocGT, xml_declaration=True, encoding="UTF-8", pretty_print=True)
