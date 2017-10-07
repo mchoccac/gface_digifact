@@ -153,9 +153,10 @@ class AccountInvoice(models.Model):
                     else:
                         Categoria.text = "SERVICIO"
 
-                    TextosDePosicion = etree.SubElement(Detalle, "TextosDePosicion")
-                    Texto = etree.SubElement(TextosDePosicion, "Texto")
-                    Texto.text = cgi.escape(linea.product_id.default_code)
+                    if linea.product_id.default_code:
+                        TextosDePosicion = etree.SubElement(Detalle, "TextosDePosicion")
+                        Texto = etree.SubElement(TextosDePosicion, "Texto")
+                        Texto.text = cgi.escape(linea.product_id.default_code)
 
                     total += total_linea
                     subtotal += total_linea_base
